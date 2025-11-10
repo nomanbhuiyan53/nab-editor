@@ -1,0 +1,10 @@
+{
+  "name": "nab-editor",
+  "version": "1.0.0",
+  "description": "Lightweight WYSIWYG editor with table tools & image resize",
+  "license": "MIT",
+  "files": ["dist"],
+  "main": "dist/nab-editor.js",
+  "style": "dist/nab-editor.fa.css",
+  "keywords": ["editor","wysiwyg","richtext","fontawesome"]
+}
