@@ -1,5 +1,5 @@
 
-````markdown
+
 # 📝 Nab Editor
 
 **Nab Editor** is a lightweight, dependency-free (except jQuery) rich-text (WYSIWYG) editor built for Laravel, PHP, and modern web apps.  
@@ -18,8 +18,6 @@ It provides **image resize**, **float alignment tools**, **table management**, *
 ✅ Zoom (90–150%) and real-time cleanup  
 ✅ Auto-sync hidden input for form submission  
 ✅ 100% client-side (no build tools required)
-
----
 
 ## 📦 Installation
 
