@@ -1,21 +1,51 @@
 {
   "name": "nab-editor",
   "version": "1.0.0",
-  "description": "Lightweight WYSIWYG with image resize, float tools, tables & cleanup.",
+  "description": "Lightweight, dependency-free (jQuery only) rich text editor with image resize, table tools, and clean HTML output.",
   "main": "dist/nab-editor.umd.js",
-  "module": "dist/nab-editor.esm.js",
   "style": "dist/nab-editor.css",
-  "license": "MIT",
-  "peerDependencies": {
-    "jquery": ">=3.6.0"
+  "module": "dist/nab-editor.umd.js",
+  "unpkg": "dist/nab-editor.umd.js",
+  "jsdelivr": "dist/nab-editor.umd.js",
+  "keywords": [
+    "text-editor",
+    "wysiwyg",
+    "rich-text",
+    "html-editor",
+    "jquery-editor",
+    "javascript",
+    "frontend",
+    "editor",
+    "nab-editor",
+    "nomanbhuiyan",
+    "united-software-solution"
+  ],
+  "homepage": "https://github.com/nomanbhuiyan53/nab-editor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nomanbhuiyan53/nab-editor.git"
   },
-  "keywords": ["editor","wysiwyg","rich-text","image-resize","table"],
-  "exports": {
-    ".": {
-      "import": "./dist/nab-editor.esm.js",
-      "require": "./dist/nab-editor.umd.js",
-      "default": "./dist/nab-editor.umd.js"
-    },
-    "./dist/nab-editor.css": "./dist/nab-editor.css"
+  "author": {
+    "name": "Md. Noman Bhuiyan",
+    "email": "nomanbhuiyan53@gmail.com",
+    "url": "https://github.com/nomanbhuiyan53"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nomanbhuiyan53/nab-editor/issues"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "format": "prettier --write .",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "jquery": "^3.7.1"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "prettier": "^3.1.1",
+    "eslint": "^9.0.0"
   }
 }
