@@ -1,44 +1,210 @@
-## Quick Start (single include with Font Awesome)
+
+````markdown
+# 📝 Nab Editor
+
+**Nab Editor** is a lightweight, dependency-free (except jQuery) rich-text (WYSIWYG) editor built for Laravel, PHP, and modern web apps.  
+It provides **image resize**, **float alignment tools**, **table management**, **text formatting**, and **clean HTML output** — all in a minimal and extensible package.
+
+---
+
+## 🚀 Features
+
+✅ Clean, minimal UI  
+✅ Live character counter  
+✅ Image upload + resize + float left/right/inline  
+✅ Table creation and cell editing tools  
+✅ Headings, font size (8–48px), font family  
+✅ Undo/Redo, lists, alignment, indent/outdent  
+✅ Zoom (90–150%) and real-time cleanup  
+✅ Auto-sync hidden input for form submission  
+✅ 100% client-side (no build tools required)
+
+---
+
+## 📦 Installation
+
+### Option 1 — Use CDN (Recommended)
 
 ```html
+<!-- Peer Dependencies -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nab-editor@1.0.0/dist/nab-editor.fa.css">
-<script src="https://cdn.jsdelivr.net/npm/nab-editor@1.0.0/dist/nab-editor.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<div id="myEditor" class="nht-editor"></div>
+<!-- Nab Editor -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/nomanbhuiyan53/nab-editor@v1.0.0/dist/nab-editor.css">
+<script src="https://cdn.jsdelivr.net/gh/nomanbhuiyan53/nab-editor@v1.0.0/dist/nab-editor.umd.js"></script>
+````
+
+Then initialize:
+
+```html
+<div id="my-editor"></div>
+
 <script>
-  // Disable autoInit in code and call manually (if ever needed):
-  const instance = NHTEditor.mount($('#myEditor'), {
-    name: 'description',
-    placeholder: 'Write here…',
-    fontSizes: [8,9,10,11,12,14,16,18,20,22,24,28,32,36,40,44,48] // 8 → 48
+  const editor = new NabEditor('#my-editor', {
+    name: 'body_html',                 // hidden input name
+    placeholder: 'Start typing…',      // placeholder text
+    zoom: 1.0,                         // default zoom (0.9 | 1 | 1.25 | 1.5)
+    onChange(html, stats) {            // optional callback
+      console.log('Characters:', stats.chars);
+    }
   });
-
-  
 </script>
 ```
 
+### Option 2 — NPM (optional)
 
-# Step 7 — Versioning & releases
+If you prefer installing via npm:
 
-- Use **Semantic Versioning**:
-  - `1.0.1` for fixes (no breaking changes),
-  - `1.1.0` for features (compatible),
-  - `2.0.0` for breaking changes.
-- For each release:
-  - Update `CHANGELOG.md`.
-  - Bump `package.json` version (if using npm).
-  - Rebuild `nab-editor.fa.css`.
-  - Tag and push.
+```bash
+npm install nab-editor
+```
 
----
+Then import in your project:
 
-## Common pitfalls (and how we already avoided them)
-- **Fonts 404**: we set `src: url("./webfonts/...")` so paths are relative to the bundled CSS in `dist/`.
-- **CORS on fonts**: jsDelivr serves correct `Content-Type`; no custom headers needed.
-- **Licensing**: we kept FA Free licenses and noted redistribution terms.
+```js
+import 'nab-editor/dist/nab-editor.css';
+import NabEditor from 'nab-editor';
+new NabEditor('#editor');
+```
 
 ---
 
-If you want, I can generate a **ready-to-push repo skeleton** (with `LICENSE`, `README.md`, `package.json`, `scripts/build-fa.sh`) so you can just paste your current `dist/nab-editor.css` & `dist/nab-editor.js` and run `npm run build:fa`.
+## 🧠 API Reference
+
+### **Constructor**
+
+```js
+new NabEditor(selectorOrElement, options)
+```
+
+| Option        | Type                    | Default           | Description                            |
+| ------------- | ----------------------- | ----------------- | -------------------------------------- |
+| `name`        | `string`                | `'content'`       | Hidden input name (for forms)          |
+| `placeholder` | `string`                | `'Start typing…'` | Placeholder text                       |
+| `zoom`        | `number`                | `1.0`             | Font zoom level (0.9 / 1 / 1.25 / 1.5) |
+| `onChange`    | `function(html, stats)` | `null`            | Callback fired on every input change   |
+
+---
+
+### **Methods**
+
+| Method          | Description                  |
+| --------------- | ---------------------------- |
+| `getHTML()`     | Returns cleaned HTML         |
+| `getText()`     | Returns visible plain text   |
+| `getStats()`    | Returns `{ chars }` object   |
+| `setHTML(html)` | Sets editor content          |
+| `focus()`       | Focuses the editor           |
+| `destroy()`     | Destroys the editor instance |
+
+---
+
+## 🧩 Toolbar Tools
+
+| Group                  | Tools                                            |
+| ---------------------- | ------------------------------------------------ |
+| **Undo/Redo**          | ⟳ Undo / Redo                                    |
+| **Text Style**         | Bold, Italic, Underline, Strike, Super/Subscript |
+| **Paragraphs**         | Headings (H1–H6), Font Size, Font Family         |
+| **Lists**              | Ordered / Unordered Lists, Indent, Outdent       |
+| **Alignment**          | Left, Center, Right, Justify                     |
+| **Insert**             | Link, Image, Table, Horizontal Line              |
+| **Color & Highlight**  | Text color, Background highlight                 |
+| **Utilities**          | Cleanup, Clear all, Zoom                         |
+| **Keyboard Shortcuts** | `Ctrl/Cmd + B/I/U`                               |
+
+---
+
+## 🖼️ Image Tools
+
+* Resize handles (8-way)
+* Float Left / Right / Inline
+* Add paragraph after image
+* Delete image
+
+---
+
+## 📊 Table Tools
+
+Floating toolbar appears when you select table cells:
+
+* ➕ Insert Row Above / Below
+* ➕ Insert Column Left / Right
+* ❌ Delete Rows / Columns / Entire Table
+
+---
+
+## 🧹 Cleanup
+
+* Removes extra spaces, invisible characters, double `<br>`
+* Sanitizes all HTML (removes `<script>`/`style>` tags and event attributes)
+* Auto-updates a hidden input field (`name` option)
+
+---
+
+## 📄 Form Example
+
+```html
+<form method="POST" action="/submit">
+  <div id="editor"></div>
+  <button type="submit">Submit</button>
+</form>
+
+<script>
+  new NabEditor('#editor', { name: 'body_html' });
+</script>
+```
+
+When submitted, your form includes:
+
+```html
+<input type="hidden" name="body_html" value="<p>Editor content...</p>">
+```
+
+---
+
+## 🌐 CDN URLs
+
+| File | URL                                                                                                                                                                        |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CSS  | [https://cdn.jsdelivr.net/gh/nomanbhuiyan53/nab-editor@v1.0.0/dist/nab-editor.css](https://cdn.jsdelivr.net/gh/nomanbhuiyan53/nab-editor@v1.0.0/dist/nab-editor.css)       |
+| JS   | [https://cdn.jsdelivr.net/gh/nomanbhuiyan53/nab-editor@v1.0.0/dist/nab-editor.umd.js](https://cdn.jsdelivr.net/gh/nomanbhuiyan53/nab-editor@v1.0.0/dist/nab-editor.umd.js) |
+
+---
+
+## 🧰 Dependencies
+
+* [jQuery ≥3.7.1](https://code.jquery.com)
+* [Font Awesome ≥6.5](https://cdnjs.com/libraries/font-awesome)
+
+---
+
+## 🛠️ License
+
+MIT © [Md. Noman Bhuiyan](https://github.com/nomanbhuiyan53)
+
+---
+
+## 🌟 Example Demo
+
+CodePen demo (coming soon)
+
+---
+
+### 💬 Credits
+
+Developed by **Md. Noman Bhuiyan**
+Part of **United Software Solution (USS)** Smart-Farm Tools.
+
+---
+
+```
+
+---
+
+✅ **Tip:**  
+Once this `README.md` is committed to your repo, GitHub will render it beautifully and jsDelivr will also show it under your package page automatically.  
+
+Would you like me to generate badges (jsDelivr hits, license, version, etc.) for the top of your README to make it look like a public open-source library (like CKEditor or Quill)?
+```

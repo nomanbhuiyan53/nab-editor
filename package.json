@@ -1,10 +1,21 @@
 {
   "name": "nab-editor",
   "version": "1.0.0",
-  "description": "Lightweight WYSIWYG editor with table tools & image resize",
+  "description": "Lightweight WYSIWYG with image resize, float tools, tables & cleanup.",
+  "main": "dist/nab-editor.umd.js",
+  "module": "dist/nab-editor.esm.js",
+  "style": "dist/nab-editor.css",
   "license": "MIT",
-  "files": ["dist"],
-  "main": "dist/nab-editor.js",
-  "style": "dist/nab-editor.fa.css",
-  "keywords": ["editor","wysiwyg","richtext","fontawesome"]
+  "peerDependencies": {
+    "jquery": ">=3.6.0"
+  },
+  "keywords": ["editor","wysiwyg","rich-text","image-resize","table"],
+  "exports": {
+    ".": {
+      "import": "./dist/nab-editor.esm.js",
+      "require": "./dist/nab-editor.umd.js",
+      "default": "./dist/nab-editor.umd.js"
+    },
+    "./dist/nab-editor.css": "./dist/nab-editor.css"
+  }
 }
