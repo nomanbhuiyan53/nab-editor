@@ -195,14 +195,4 @@ CodePen demo (coming soon)
 Developed by **Md. Noman Bhuiyan**
 Part of **United Software Solution (USS)** Smart-Farm Tools.
 
----
 
-```
-
----
-
-✅ **Tip:**  
-Once this `README.md` is committed to your repo, GitHub will render it beautifully and jsDelivr will also show it under your package page automatically.  
-
-Would you like me to generate badges (jsDelivr hits, license, version, etc.) for the top of your README to make it look like a public open-source library (like CKEditor or Quill)?
-```
