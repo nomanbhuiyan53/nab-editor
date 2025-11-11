@@ -193,6 +193,5 @@ CodePen demo (coming soon)
 ### 💬 Credits
 
 Developed by **Md. Noman Bhuiyan**
-Part of **United Software Solution (USS)** Smart-Farm Tools.
 
 
