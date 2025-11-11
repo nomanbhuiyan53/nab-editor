@@ -41,13 +41,11 @@ Then initialize:
 <div id="my-editor"></div>
 
 <script>
-  const editor = new NabEditor('#my-editor', {
-    name: 'body_html',                 // hidden input name
-    placeholder: 'Start typing…',      // placeholder text
-    zoom: 1.0,                         // default zoom (0.9 | 1 | 1.25 | 1.5)
-    onChange(html, stats) {            // optional callback
-      console.log('Characters:', stats.chars);
-    }
+  // Disable autoInit in code and call manually (if ever needed):
+  const instance = NABEditor.mount($('#myEditor'), {
+    name: 'description',
+    placeholder: 'Write here…',
+    fontSizes: [8,9,10,11,12,14,16,18,20,22,24,28,32,36,40,44,48] // 8 → 48
   });
 </script>
 ```
