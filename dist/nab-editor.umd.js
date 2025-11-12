@@ -1,4 +1,4 @@
-/*! nab-editor v1.0.0 | MIT */
+/*! nab-editor v1.0.1 | MIT */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
     module.exports = factory(require('jquery'));
@@ -9,7 +9,7 @@
   'use strict';
   if (!$) throw new Error('NabEditor: jQuery is required');
 
-  // ============== utils: sanitize & clean ==============
+  /* ============== sanitize & clean ============== */
   function sanitize(html){
     const t = document.createElement('template'); t.innerHTML = html;
     $(t.content).find('script,style').remove();
@@ -28,7 +28,8 @@
                       .replace(/\u00A0/g,' ')
                       .replace(/[ \t]+/g,' ')
                       .replace(/ *\n+ */g,'\n').trim();
-    const w = document.createTreeWalker(t.content, NodeFilter.SHOW_TEXT, null); const rm=[];
+    const w = document.createTreeWalker(t.content, NodeFilter.SHOW_TEXT, null);
+    const rm=[];
     while(w.nextNode()){ const n=w.currentNode; n.nodeValue=strip(n.nodeValue); if(!n.nodeValue) rm.push(n); }
     rm.forEach(n=>n.parentNode&&n.parentNode.removeChild(n));
     $(t.content).find('*').each(function(){
@@ -40,7 +41,7 @@
     return sanitize(t.innerHTML);
   }
 
-  // ============== selection helpers ==============
+  /* ============== selection helpers ============== */
   const blockTags = /^(P|DIV|H1|H2|H3|H4|H5|H6|BLOCKQUOTE|PRE|LI|TD|TH)$/i;
   const inside = (node,root)=>{ if(!node) return false; if(node.nodeType===3) node=node.parentNode; return root.contains(node); };
   function getRangeInEditable(ed){
@@ -106,7 +107,7 @@
   }
   const exec=(cmd,val=null)=>document.execCommand(cmd,false,val);
 
-  // ============== class ==============
+  /* ============== class ============== */
   class NabEditor {
     constructor(target, opts={}){
       this.$host   = (target instanceof $) ? target : $(target);
@@ -118,17 +119,15 @@
         onChange: null
       }, opts);
 
-      // build DOM
       this.build();
-      // bind events
       this.bind();
-      // initial sync
       this.sync();
     }
 
+    /* ---------- DOM ---------- */
     build(){
       const tpl = `
-      <div class="nab-wrap">
+      <div class="nab-reset nab-wrap">
         <div class="nab-doc">
           <div class="nab-toolbar" role="toolbar" aria-label="Nab toolbar">
             <div class="nab-group">
@@ -224,35 +223,36 @@
             <input type="hidden" class="nab-hidden" />
           </div>
         </div>
-      </div>
 
-      <div class="nab-table-tools" id="nabTableTools">
-        <button type="button" class="nab-btn" data-tt="row-above" title="Insert row above"><i class="fa-solid fa-arrow-up"></i></button>
-        <button type="button" class="nab-btn" data-tt="row-below" title="Insert row below"><i class="fa-solid fa-arrow-down"></i></button>
-        <button type="button" class="nab-btn" data-tt="col-left" title="Insert column left"><i class="fa-solid fa-arrow-left"></i></button>
-        <button type="button" class="nab-btn" data-tt="col-right" title="Insert column right"><i class="fa-solid fa-arrow-right"></i></button>
-        <button type="button" class="nab-btn" data-tt="del-rows" title="Delete selected rows"><i class="fa-solid fa-delete-left"></i></button>
-        <button type="button" class="nab-btn" data-tt="del-cols" title="Delete selected cols"><i class="fa-regular fa-square-minus"></i></button>
-        <button type="button" class="nab-btn" data-tt="del-table" title="Delete table"><i class="fa-regular fa-trash-can"></i></button>
-      </div>
+        <!-- overlays (scoped to instance, no IDs) -->
+        <div class="nab-table-tools">
+          <button type="button" class="nab-btn" data-tt="row-above" title="Insert row above"><i class="fa-solid fa-arrow-up"></i></button>
+          <button type="button" class="nab-btn" data-tt="row-below" title="Insert row below"><i class="fa-solid fa-arrow-down"></i></button>
+          <button type="button" class="nab-btn" data-tt="col-left" title="Insert column left"><i class="fa-solid fa-arrow-left"></i></button>
+          <button type="button" class="nab-btn" data-tt="col-right" title="Insert column right"><i class="fa-solid fa-arrow-right"></i></button>
+          <button type="button" class="nab-btn" data-tt="del-rows" title="Delete selected rows"><i class="fa-solid fa-delete-left"></i></button>
+          <button type="button" class="nab-btn" data-tt="del-cols" title="Delete selected cols"><i class="fa-regular fa-square-minus"></i></button>
+          <button type="button" class="nab-btn" data-tt="del-table" title="Delete table"><i class="fa-regular fa-trash-can"></i></button>
+        </div>
 
-      <div class="nab-img-resizer" id="nabImgResizer" aria-hidden="true">
-        <div class="ir-handle nw" data-pos="nw"></div>
-        <div class="ir-handle ne" data-pos="ne"></div>
-        <div class="ir-handle sw" data-pos="sw"></div>
-        <div class="ir-handle se" data-pos="se"></div>
-        <div class="ir-handle n"  data-pos="n"></div>
-        <div class="ir-handle s"  data-pos="s"></div>
-        <div class="ir-handle w"  data-pos="w"></div>
-        <div class="ir-handle e"  data-pos="e"></div>
-      </div>
+        <div class="nab-img-resizer" aria-hidden="true">
+          <div class="ir-handle nw" data-pos="nw"></div>
+          <div class="ir-handle ne" data-pos="ne"></div>
+          <div class="ir-handle sw" data-pos="sw"></div>
+          <div class="ir-handle se" data-pos="se"></div>
+          <div class="ir-handle n"  data-pos="n"></div>
+          <div class="ir-handle s"  data-pos="s"></div>
+          <div class="ir-handle w"  data-pos="w"></div>
+          <div class="ir-handle e"  data-pos="e"></div>
+        </div>
 
-      <div class="nab-img-tools" id="nabImgTools">
-        <button type="button" class="nab-btn" data-img="left" title="Float left"><i class="fa-solid fa-align-left"></i></button>
-        <button type="button" class="nab-btn" data-img="right" title="Float right"><i class="fa-solid fa-align-right"></i></button>
-        <button type="button" class="nab-btn" data-img="inline" title="Inline"><i class="fa-solid fa-text-height"></i></button>
-        <button type="button" class="nab-btn" data-img="para" title="Add paragraph after"><i class="fa-solid fa-paragraph"></i></button>
-        <button type="button" class="nab-btn" data-img="remove" title="Remove image"><i class="fa-regular fa-trash-can"></i></button>
+        <div class="nab-img-tools">
+          <button type="button" class="nab-btn" data-img="left" title="Float left"><i class="fa-solid fa-align-left"></i></button>
+          <button type="button" class="nab-btn" data-img="right" title="Float right"><i class="fa-solid fa-align-right"></i></button>
+          <button type="button" class="nab-btn" data-img="inline" title="Inline"><i class="fa-solid fa-text-height"></i></button>
+          <button type="button" class="nab-btn" data-img="para" title="Add paragraph after"><i class="fa-solid fa-paragraph"></i></button>
+          <button type="button" class="nab-btn" data-img="remove" title="Remove image"><i class="fa-regular fa-trash-can"></i></button>
+        </div>
       </div>
       `;
 
@@ -265,23 +265,23 @@
       this.$cnt       = this.$root.find('.nab-cnt');
       this.$file      = this.$root.find('.nab-file');
 
-      // ids (singletons per page but we position near active editor)
-      this.$tableTools = this.$root.find('#nabTableTools');
-      this.$imgResizer = this.$root.find('#nabImgResizer');
-      this.$imgTools   = this.$root.find('#nabImgTools');
+      this.$tableTools = this.$root.find('.nab-table-tools');
+      this.$imgResizer = this.$root.find('.nab-img-resizer');
+      this.$imgTools   = this.$root.find('.nab-img-tools');
 
       // config
       this.$editable.attr('data-ph', this.opts.placeholder);
       this.$hidden.attr('name', this.opts.name);
 
-      // build font sizes 8–48
+      // font sizes 8–48
       const $fs = this.$toolbar.find('select[data-act="fontSizePx"]').empty();
       for (let i=8;i<=48;i++) $fs.append(`<option value="${i}" ${i===16?'selected':''}>${i} px</option>`);
 
-      // zoom
+      // zoom base
       document.documentElement.style.setProperty('--base-font', (16 * (this.opts.zoom||1))+'px');
     }
 
+    /* ---------- event wiring ---------- */
     bind(){
       const $ed = this.$editable;
       const $tb = this.$toolbar;
@@ -291,7 +291,7 @@
       const saveSel = ()=>{ const sel=window.getSelection(); if(sel&&sel.rangeCount){ const r=sel.getRangeAt(0); if(inside(r.commonAncestorContainer,$ed[0])) selStore.set($ed[0], r.cloneRange()); } };
       const restoreSel = ()=>{ const r=selStore.get($ed[0]); if(!r) return false; const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(r); return true; };
 
-      // ---- toolbar buttons
+      // toolbar interactions
       $tb.on('mousedown','button,select,label,input[type="color"]', (e)=>{ e.preventDefault(); saveSel(); });
 
       $tb.on('click','.nab-btn[data-cmd]', (e)=>{
@@ -333,7 +333,7 @@
         saveSel(); this.sync();
       });
 
-      // ---- link / image / table / cleanup / clearAll
+      // link / image / table / cleanup / clear
       $tb.on('click','.nab-btn[data-act]', (e)=>{
         const act=$(e.currentTarget).data('act');
         restoreSel();
@@ -348,7 +348,7 @@
         saveSel(); this.sync();
       });
 
-      // ---- file → image
+      // file → image
       this.$file.on('change', (ev)=>{
         const f=ev.target.files && ev.target.files[0]; if(!f) return;
         const reader=new FileReader();
@@ -367,7 +367,7 @@
         reader.readAsDataURL(f);
       });
 
-      // ---- typing & paste
+      // typing & paste
       $ed.on('input', ()=>this.sync());
       $ed.on('paste', (ev)=>{
         ev.preventDefault();
@@ -379,7 +379,7 @@
         this.sync();
       });
 
-      // ---- selection updates
+      // selection updates
       $ed.on('keyup mouseup', ()=> saveSel());
       document.addEventListener('selectionchange', ()=>{
         const sel=window.getSelection();
@@ -389,28 +389,46 @@
         }
       });
 
-      // ====== Image resizer + tools ======
+      /* ===== Image resizer + tools (FIXED overlays) ===== */
       this.$imgResizer.on('mousedown', '.ir-handle', (e)=>{
         e.preventDefault(); e.stopPropagation();
         const pos = $(e.currentTarget).data('pos');
         this.beginResize(pos, e);
       });
 
+      // namespaced to avoid global clashes
       $(document).on('mousemove.nab', (e)=>{ if(this.resizing) this.applyResize(e); });
       $(document).on('mouseup.nab', ()=> this.endResize());
-      $(window).on('scroll.nab resize.nab', ()=>{ this.positionImgResizer(); this.positionImgTools(); });
 
-      $(document).on('click.nab', (e)=>{
-        const isImg=$(e.target).closest('img').length>0;
-        const isRes=$(e.target).closest('#nabImgResizer').length>0;
-        const isTools=$(e.target).closest('#nabImgTools').length>0;
-        if(!isImg && !isRes && !isTools) this.hideImgUI();
-      });
-      $(document).on('click.nab', '.nab-editable img', (e)=>{
-        e.preventDefault(); this.imgTarget=e.currentTarget;
+      // position overlays on scroll/resize
+      const repositionOverlays = ()=>{ this.positionImgResizer(); this.positionImgTools(); if(this._lastCells) this.positionTableTools(this._lastCells); };
+      $(window).on('scroll.nab resize.nab', repositionOverlays);
+
+      // robust reflow watcher
+      try {
+        this._ro = new ResizeObserver(()=>{ repositionOverlays(); });
+        this._ro.observe(document.body);
+      } catch(_) {}
+
+      // image selection
+      this.$root.on('click', '.nab-editable img', (e)=>{
+        e.preventDefault();
+        this.imgTarget = e.currentTarget;
         this.positionImgResizer(); this.positionImgTools();
       });
 
+      // click-away hides overlays
+      $(document).on('mousedown.nab', (e)=>{
+        const $t=$(e.target);
+        const isImg = $t.closest('.nab-editable img').length>0;
+        const isRes = $t.closest(this.$imgResizer).length>0;
+        const isTools = $t.closest(this.$imgTools).length>0;
+        const isTableTools = $t.closest(this.$tableTools).length>0;
+        if(!isImg && !isRes && !isTools) this.hideImgUI();
+        if(!isTableTools && !$t.is('td,th')) this.hideTableTools();
+      });
+
+      // delete image -> hide resizer next tick
       document.addEventListener('keydown', (e)=>{
         if(!this.imgTarget) return;
         if(e.key==='Backspace'||e.key==='Delete'){
@@ -418,6 +436,7 @@
         }
       });
 
+      // image tools actions
       this.$imgTools.on('click','.nab-btn', (e)=>{
         if(!this.imgTarget) return;
         const act=$(e.currentTarget).data('img');
@@ -425,16 +444,16 @@
         else if(act==='right'){ $(this.imgTarget).removeClass('nab-img-left').addClass('nab-img-right'); this.ensureParagraphAfter(this.imgTarget); }
         else if(act==='inline'){ $(this.imgTarget).removeClass('nab-img-left nab-img-right').css({display:'inline',float:''}); this.ensureParagraphAfter(this.imgTarget); }
         else if(act==='para'){ this.ensureParagraphAfter(this.imgTarget,true); }
-        else if(act==='remove'){ const $ed=$(this.imgTarget).closest('.nab-editable'); $(this.imgTarget).remove(); $ed.focus(); }
+        else if(act==='remove'){ const $e=$(this.imgTarget).closest('.nab-editable'); $(this.imgTarget).remove(); $e.focus(); this.hideImgUI(); }
         this.positionImgResizer(); this.positionImgTools();
       });
 
-      // ====== Table tools (scoped to this editor) ======
+      /* ===== Table tools (fixed overlay) ===== */
       let selecting=false, anchor=null, $activeTable=null;
       const cellCoords = ($cell)=>({ row:$cell.parent().index(), col:$cell.index() });
       const normalizeRect = (a,b)=>({ r1:Math.min(a.row,b.row), r2:Math.max(a.row,b.row),
                                        c1:Math.min(a.col,b.col), c2:Math.max(a.col,b.col) });
-      function selectRect($table, rect){
+      const selectRect = ($table, rect)=>{
         $table.find('td,th').removeClass('nab-cell-selected');
         $table.find('tr').each(function(r){
           if(r<rect.r1 || r>rect.r2) return;
@@ -443,16 +462,9 @@
             $(this).addClass('nab-cell-selected');
           });
         });
-      }
-      const positionTableTools = ($cells)=>{
-        const $tt = this.$tableTools;
-        if(!$cells || !$cells.length) return $tt.hide();
-        const r=$cells.get(0).getBoundingClientRect();
-        $tt.css({display:'flex',top:window.scrollY+r.top-$tt.outerHeight()-6,left:window.scrollX+r.left});
       };
-      this.hideTableTools = ()=> this.$tableTools.hide();
 
-      $ed.on('mousedown','td,th', (e)=>{
+      this.$editable.on('mousedown','td,th', (e)=>{
         this.hideImgUI();
         selecting=true;
         const $cell=$(e.currentTarget);
@@ -460,26 +472,25 @@
         anchor=cellCoords($cell);
         $activeTable.find('td,th').removeClass('nab-cell-selected');
         $activeTable.find('tr').eq(anchor.row).children('th,td').eq(anchor.col).addClass('nab-cell-selected');
-        positionTableTools($activeTable.find('.nab-cell-selected'));
+        this._lastCells = $activeTable.find('.nab-cell-selected');
+        this.positionTableTools(this._lastCells);
         e.preventDefault();
       });
-      $ed.on('mouseover','td,th', (e)=>{
+
+      this.$editable.on('mouseover','td,th', (e)=>{
         if(!selecting || !$activeTable) return;
         const cur=cellCoords($(e.currentTarget));
         const rect=normalizeRect(anchor,cur);
         selectRect($activeTable,rect);
-        positionTableTools($activeTable.find('.nab-cell-selected'));
+        this._lastCells = $activeTable.find('.nab-cell-selected');
+        this.positionTableTools(this._lastCells);
       });
-      $(document).on('mouseup.nab-table', ()=>{ if(selecting) selecting=false; });
 
-      $ed.on('mousedown', (e)=>{
-        if(!$(e.target).is('td,th')){ $ed.find('.nab-cell-selected').removeClass('nab-cell-selected'); this.hideTableTools(); }
-        if(!$(e.target).is('img')) this.hideImgUI();
-      });
+      $(document).on('mouseup.nab-table', ()=>{ if(selecting) selecting=false; });
 
       this.$tableTools.on('click','.nab-btn', (e)=>{
         const action=$(e.currentTarget).data('tt');
-        const $cells=$ed.find('.nab-cell-selected');
+        const $cells=this.$editable.find('.nab-cell-selected');
         const $table=$cells.length?$cells.first().closest('table'):null;
         if(!$table) return;
 
@@ -518,15 +529,15 @@
         }
         if(action==='del-table'){ $table.remove(); this.hideTableTools(); }
 
-        $ed.find('.nab-cell-selected').removeClass('nab-cell-selected');
+        this.$editable.find('.nab-cell-selected').removeClass('nab-cell-selected');
         this.hideTableTools(); this.sync();
       });
 
-      // store helpers on instance
+      // store helpers
       this._saveSel = saveSel; this._restoreSel = restoreSel;
     }
 
-    // ===== editor API =====
+    /* ---------- public API ---------- */
     getHTML(){ return cleanUnnecessary(this.$editable.html()); }
     getText(){
       return (this.$editable.text()||'')
@@ -537,11 +548,12 @@
     setHTML(html){ this.$editable.html(cleanUnnecessary(html||'')); this.sync(); }
     focus(){ this.$editable.trigger('focus'); }
     destroy(){
-      $(document).off('.nab'); $(window).off('.nab');
+      $(document).off('.nab'); $(window).off('.nab'); $(document).off('.nab-table');
+      if (this._ro && this._ro.disconnect) this._ro.disconnect();
       this.$root.remove();
     }
 
-    // ===== core sync =====
+    /* ---------- core sync ---------- */
     sync(){
       const cleaned = this.getHTML();
       this.$hidden.val(cleaned);
@@ -550,9 +562,10 @@
         this.opts.onChange(cleaned, this.getStats());
       }
       if (this.imgTarget){ this.positionImgResizer(); this.positionImgTools(); }
+      if (this._lastCells) this.positionTableTools(this._lastCells);
     }
 
-    // ===== image tools =====
+    /* ---------- image tools ---------- */
     ensureParagraphAfter(img, force=false){
       const $node=$(img); const next=$node[0].nextSibling;
       if(force || !next || (next.nodeType===1 && next.tagName==='BR')){
@@ -566,17 +579,22 @@
         }
       },0);
     }
-    rectOf(el){ const r=el.getBoundingClientRect(); return {top:r.top,left:r.left,width:r.width,height:r.height}; }
     positionImgResizer(){
       if(!this.imgTarget) return;
-      const r=this.rectOf(this.imgTarget);
-      this.$imgResizer.css({display:'block',top:window.scrollY+r.top,left:window.scrollX+r.left,width:r.width,height:r.height})
-        .attr('aria-hidden','false');
+      const r=this.imgTarget.getBoundingClientRect();
+      this.$imgResizer.css({
+        display:'block',
+        top: r.top, left: r.left, width: r.width, height: r.height
+      }).attr('aria-hidden','false');
     }
     positionImgTools(){
       if(!this.imgTarget) return this.$imgTools.hide();
-      const r=this.rectOf(this.imgTarget);
-      this.$imgTools.css({display:'flex',top:window.scrollY+r.top-this.$imgTools.outerHeight()-6,left:window.scrollX+r.left});
+      const r=this.imgTarget.getBoundingClientRect();
+      this.$imgTools.css({
+        display:'flex',
+        top: r.top - this.$imgTools.outerHeight() - 6,
+        left: r.left
+      });
     }
     hideImgUI(){
       this.$imgResizer.hide().attr('aria-hidden','true');
@@ -587,13 +605,13 @@
     beginResize(pos, e){
       if(!this.imgTarget) return;
       const r=this.imgTarget.getBoundingClientRect();
-      this._resizeStart={x:e.pageX,y:e.pageY,w:r.width,h:r.height,ratio:r.width/r.height,pos};
+      this._resizeStart={x:e.clientX,y:e.clientY,w:r.width,h:r.height,ratio:r.width/r.height,pos};
       this.resizing=true;
       $(document.documentElement).css('cursor', this.$imgResizer.find('.ir-handle.'+pos).css('cursor'));
     }
     applyResize(e){
       const st=this._resizeStart; if(!this.resizing || !st || !this.imgTarget) return;
-      const dx=e.pageX-st.x, dy=e.pageY-st.y;
+      const dx=e.clientX-st.x, dy=e.clientY-st.y;
       let newW=st.w, newH=st.h;
       const pos=st.pos, sx=(pos.includes('e')?+1:(pos.includes('w')?-1:0)), sy=(pos.includes('s')?+1:(pos.includes('n')?-1:0));
       const maxW=(()=>{ const ed=this.$editable[0].getBoundingClientRect(); return ed.width - 24; })();
@@ -604,71 +622,19 @@
       this.positionImgResizer(); this.positionImgTools();
     }
     endResize(){ if(!this.resizing) return; this.resizing=false; $(document.documentElement).css('cursor',''); }
-  }
 
-  // expose
-  return NabEditor;
-}));
-(function () {
-    if (!window.NabEditor) return;
-
-    // replace methods on the prototype so existing instances benefit too
-    const P = window.NabEditor.prototype;
-
-    // Use fixed coords (viewport-based), no scrollY offsets
-    P.positionImgResizer = function () {
-      if (!this.imgTarget) return;
-      const r = this.imgTarget.getBoundingClientRect();
-      this.$imgResizer.css({
-        display: 'block',
-        top: r.top,
-        left: r.left,
-        width: r.width,
-        height: r.height
-      }).attr('aria-hidden','false');
-    };
-
-    P.positionImgTools = function () {
-      if (!this.imgTarget) return this.$imgTools.hide();
-      const r = this.imgTarget.getBoundingClientRect();
-      this.$imgTools.css({
-        display: 'flex',
-        top: r.top - this.$imgTools.outerHeight() - 6,
-        left: r.left
-      });
-    };
-
-    // Also patch table tools to use fixed coordinates
-    P.hideTableTools = function(){ this.$tableTools.hide(); };
-    // Create a helper we can call from outside if needed
-    P.___positionTableToolsFixed = function ($cells) {
-      if (!$cells || !$cells.length) return this.$tableTools.hide();
-      const r = $cells.get(0).getBoundingClientRect();
+    /* ---------- table tools (fixed) ---------- */
+    positionTableTools($cells){
+      if(!$cells || !$cells.length) return this.$tableTools.hide();
+      const r=$cells.get(0).getBoundingClientRect();
       this.$tableTools.css({
-        display: 'flex',
+        display:'flex',
         top: r.top - this.$tableTools.outerHeight() - 6,
         left: r.left
       });
-    };
+    }
+    hideTableTools(){ this.$tableTools.hide(); }
+  }
 
-    // Rewire the global scroll/resize handlers to just re-run our fixed positions
-    const _origBind = P.bind;
-    P.bind = function () {
-      _origBind.apply(this, arguments);
-      const self = this;
-      // Replace window handlers to use fixed math
-      $(window).off('scroll.nab resize.nab').on('scroll.nab resize.nab', function () {
-        self.positionImgResizer();
-        self.positionImgTools();
-      });
-      // Small debounce for layout jumps
-      let tm = null;
-      new ResizeObserver(() => {
-        clearTimeout(tm);
-        tm = setTimeout(() => {
-          self.positionImgResizer();
-          self.positionImgTools();
-        }, 30);
-      }).observe(document.body);
-    };
-  })();
+  return NabEditor;
+}));
