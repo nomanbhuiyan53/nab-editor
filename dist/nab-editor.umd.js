@@ -1,4 +1,4 @@
-/*! nab-editor v1.0.1 | MIT */
+/*! nab-editor v1.0.2 | MIT */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) {
     module.exports = factory(require('jquery'));
@@ -107,6 +107,10 @@
   }
   const exec=(cmd,val=null)=>document.execCommand(cmd,false,val);
 
+  /* ============== UID helper for per-instance portals ============== */
+  let __NAB_UID = 1;
+  function uid(){ return 'nabx' + (__NAB_UID++).toString(36); }
+
   /* ============== class ============== */
   class NabEditor {
     constructor(target, opts={}){
@@ -119,6 +123,7 @@
         onChange: null
       }, opts);
 
+      this._uid = uid();
       this.build();
       this.bind();
       this.sync();
@@ -127,7 +132,7 @@
     /* ---------- DOM ---------- */
     build(){
       const tpl = `
-      <div class="nab-reset nab-wrap">
+      <div class="nab-reset nab-wrap" data-nab="${this._uid}">
         <div class="nab-doc">
           <div class="nab-toolbar" role="toolbar" aria-label="Nab toolbar">
             <div class="nab-group">
@@ -223,36 +228,6 @@
             <input type="hidden" class="nab-hidden" />
           </div>
         </div>
-
-        <!-- overlays (scoped to instance, no IDs) -->
-        <div class="nab-table-tools">
-          <button type="button" class="nab-btn" data-tt="row-above" title="Insert row above"><i class="fa-solid fa-arrow-up"></i></button>
-          <button type="button" class="nab-btn" data-tt="row-below" title="Insert row below"><i class="fa-solid fa-arrow-down"></i></button>
-          <button type="button" class="nab-btn" data-tt="col-left" title="Insert column left"><i class="fa-solid fa-arrow-left"></i></button>
-          <button type="button" class="nab-btn" data-tt="col-right" title="Insert column right"><i class="fa-solid fa-arrow-right"></i></button>
-          <button type="button" class="nab-btn" data-tt="del-rows" title="Delete selected rows"><i class="fa-solid fa-delete-left"></i></button>
-          <button type="button" class="nab-btn" data-tt="del-cols" title="Delete selected cols"><i class="fa-regular fa-square-minus"></i></button>
-          <button type="button" class="nab-btn" data-tt="del-table" title="Delete table"><i class="fa-regular fa-trash-can"></i></button>
-        </div>
-
-        <div class="nab-img-resizer" aria-hidden="true">
-          <div class="ir-handle nw" data-pos="nw"></div>
-          <div class="ir-handle ne" data-pos="ne"></div>
-          <div class="ir-handle sw" data-pos="sw"></div>
-          <div class="ir-handle se" data-pos="se"></div>
-          <div class="ir-handle n"  data-pos="n"></div>
-          <div class="ir-handle s"  data-pos="s"></div>
-          <div class="ir-handle w"  data-pos="w"></div>
-          <div class="ir-handle e"  data-pos="e"></div>
-        </div>
-
-        <div class="nab-img-tools">
-          <button type="button" class="nab-btn" data-img="left" title="Float left"><i class="fa-solid fa-align-left"></i></button>
-          <button type="button" class="nab-btn" data-img="right" title="Float right"><i class="fa-solid fa-align-right"></i></button>
-          <button type="button" class="nab-btn" data-img="inline" title="Inline"><i class="fa-solid fa-text-height"></i></button>
-          <button type="button" class="nab-btn" data-img="para" title="Add paragraph after"><i class="fa-solid fa-paragraph"></i></button>
-          <button type="button" class="nab-btn" data-img="remove" title="Remove image"><i class="fa-regular fa-trash-can"></i></button>
-        </div>
       </div>
       `;
 
@@ -265,9 +240,38 @@
       this.$cnt       = this.$root.find('.nab-cnt');
       this.$file      = this.$root.find('.nab-file');
 
-      this.$tableTools = this.$root.find('.nab-table-tools');
-      this.$imgResizer = this.$root.find('.nab-img-resizer');
-      this.$imgTools   = this.$root.find('.nab-img-tools');
+      // Create BODY-level portals (immune to transforms/scroll contexts)
+      this.$portalResizer = $(`
+        <div class="nab-portal-resizer" data-nab="${this._uid}" aria-hidden="true">
+          <div class="ir-handle nw" data-pos="nw"></div>
+          <div class="ir-handle ne" data-pos="ne"></div>
+          <div class="ir-handle sw" data-pos="sw"></div>
+          <div class="ir-handle se" data-pos="se"></div>
+          <div class="ir-handle n"  data-pos="n"></div>
+          <div class="ir-handle s"  data-pos="s"></div>
+          <div class="ir-handle w"  data-pos="w"></div>
+          <div class="ir-handle e"  data-pos="e"></div>
+        </div>`);
+      this.$portalImgTools = $(`
+        <div class="nab-portal-tools nab-image" data-nab="${this._uid}">
+          <button type="button" class="nab-btn" data-img="left" title="Float left"><i class="fa-solid fa-align-left"></i></button>
+          <button type="button" class="nab-btn" data-img="right" title="Float right"><i class="fa-solid fa-align-right"></i></button>
+          <button type="button" class="nab-btn" data-img="inline" title="Inline"><i class="fa-solid fa-text-height"></i></button>
+          <button type="button" class="nab-btn" data-img="para" title="Add paragraph after"><i class="fa-solid fa-paragraph"></i></button>
+          <button type="button" class="nab-btn" data-img="remove" title="Remove image"><i class="fa-regular fa-trash-can"></i></button>
+        </div>`);
+      this.$portalTableTools = $(`
+        <div class="nab-portal-tools nab-table" data-nab="${this._uid}">
+          <button type="button" class="nab-btn" data-tt="row-above" title="Insert row above"><i class="fa-solid fa-arrow-up"></i></button>
+          <button type="button" class="nab-btn" data-tt="row-below" title="Insert row below"><i class="fa-solid fa-arrow-down"></i></button>
+          <button type="button" class="nab-btn" data-tt="col-left" title="Insert column left"><i class="fa-solid fa-arrow-left"></i></button>
+          <button type="button" class="nab-btn" data-tt="col-right" title="Insert column right"><i class="fa-solid fa-arrow-right"></i></button>
+          <button type="button" class="nab-btn" data-tt="del-rows" title="Delete selected rows"><i class="fa-solid fa-delete-left"></i></button>
+          <button type="button" class="nab-btn" data-tt="del-cols" title="Delete selected cols"><i class="fa-regular fa-square-minus"></i></button>
+          <button type="button" class="nab-btn" data-tt="del-table" title="Delete table"><i class="fa-regular fa-trash-can"></i></button>
+        </div>`);
+
+      $(document.body).append(this.$portalResizer, this.$portalImgTools, this.$portalTableTools);
 
       // config
       this.$editable.attr('data-ph', this.opts.placeholder);
@@ -293,14 +297,8 @@
 
       // toolbar interactions
       $tb.on('mousedown','button,select,label,input[type="color"]', (e)=>{ e.preventDefault(); saveSel(); });
-
-      $tb.on('click','.nab-btn[data-cmd]', (e)=>{
-        restoreSel(); exec($(e.currentTarget).data('cmd')); saveSel(); this.sync();
-      });
-
-      $tb.on('input','.nab-color', (e)=>{
-        restoreSel(); exec($(e.currentTarget).data('cmd'), $(e.currentTarget).val()); saveSel(); this.sync();
-      });
+      $tb.on('click','.nab-btn[data-cmd]', (e)=>{ restoreSel(); exec($(e.currentTarget).data('cmd')); saveSel(); this.sync(); });
+      $tb.on('input','.nab-color', (e)=>{ restoreSel(); exec($(e.currentTarget).data('cmd'), $(e.currentTarget).val()); saveSel(); this.sync(); });
 
       $tb.on('change','select.nab-sel', (e)=>{
         const act = $(e.currentTarget).data('act');
@@ -389,22 +387,19 @@
         }
       });
 
-      /* ===== Image resizer + tools (FIXED overlays) ===== */
-      this.$imgResizer.on('mousedown', '.ir-handle', (e)=>{
+      /* ===== Image resizer + tools (BODY portals) ===== */
+      this.$portalResizer.on('mousedown', '.ir-handle', (e)=>{
         e.preventDefault(); e.stopPropagation();
         const pos = $(e.currentTarget).data('pos');
         this.beginResize(pos, e);
       });
 
-      // namespaced to avoid global clashes
-      $(document).on('mousemove.nab', (e)=>{ if(this.resizing) this.applyResize(e); });
-      $(document).on('mouseup.nab', ()=> this.endResize());
+      $(document).on('mousemove.'+this._uid, (e)=>{ if(this.resizing) this.applyResize(e); });
+      $(document).on('mouseup.'+this._uid, ()=> this.endResize());
 
-      // position overlays on scroll/resize
       const repositionOverlays = ()=>{ this.positionImgResizer(); this.positionImgTools(); if(this._lastCells) this.positionTableTools(this._lastCells); };
-      $(window).on('scroll.nab resize.nab', repositionOverlays);
+      $(window).on('scroll.'+this._uid+' resize.'+this._uid, repositionOverlays);
 
-      // robust reflow watcher
       try {
         this._ro = new ResizeObserver(()=>{ repositionOverlays(); });
         this._ro.observe(document.body);
@@ -418,12 +413,12 @@
       });
 
       // click-away hides overlays
-      $(document).on('mousedown.nab', (e)=>{
+      $(document).on('mousedown.'+this._uid, (e)=>{
         const $t=$(e.target);
         const isImg = $t.closest('.nab-editable img').length>0;
-        const isRes = $t.closest(this.$imgResizer).length>0;
-        const isTools = $t.closest(this.$imgTools).length>0;
-        const isTableTools = $t.closest(this.$tableTools).length>0;
+        const isRes = $t.closest(this.$portalResizer).length>0;
+        const isTools = $t.closest(this.$portalImgTools).length>0;
+        const isTableTools = $t.closest(this.$portalTableTools).length>0;
         if(!isImg && !isRes && !isTools) this.hideImgUI();
         if(!isTableTools && !$t.is('td,th')) this.hideTableTools();
       });
@@ -437,7 +432,7 @@
       });
 
       // image tools actions
-      this.$imgTools.on('click','.nab-btn', (e)=>{
+      this.$portalImgTools.on('click','.nab-btn', (e)=>{
         if(!this.imgTarget) return;
         const act=$(e.currentTarget).data('img');
         if(act==='left'){ $(this.imgTarget).removeClass('nab-img-right').addClass('nab-img-left'); this.ensureParagraphAfter(this.imgTarget); }
@@ -448,7 +443,7 @@
         this.positionImgResizer(); this.positionImgTools();
       });
 
-      /* ===== Table tools (fixed overlay) ===== */
+      /* ===== Table tools (BODY portal) ===== */
       let selecting=false, anchor=null, $activeTable=null;
       const cellCoords = ($cell)=>({ row:$cell.parent().index(), col:$cell.index() });
       const normalizeRect = (a,b)=>({ r1:Math.min(a.row,b.row), r2:Math.max(a.row,b.row),
@@ -486,9 +481,9 @@
         this.positionTableTools(this._lastCells);
       });
 
-      $(document).on('mouseup.nab-table', ()=>{ if(selecting) selecting=false; });
+      $(document).on('mouseup.'+this._uid+'-table', ()=>{ if(selecting) selecting=false; });
 
-      this.$tableTools.on('click','.nab-btn', (e)=>{
+      this.$portalTableTools.on('click','.nab-btn', (e)=>{
         const action=$(e.currentTarget).data('tt');
         const $cells=this.$editable.find('.nab-cell-selected');
         const $table=$cells.length?$cells.first().closest('table'):null;
@@ -548,8 +543,11 @@
     setHTML(html){ this.$editable.html(cleanUnnecessary(html||'')); this.sync(); }
     focus(){ this.$editable.trigger('focus'); }
     destroy(){
-      $(document).off('.nab'); $(window).off('.nab'); $(document).off('.nab-table');
+      $(document).off('.'+this._uid); $(window).off('.'+this._uid);
       if (this._ro && this._ro.disconnect) this._ro.disconnect();
+      this.$portalResizer.remove();
+      this.$portalImgTools.remove();
+      this.$portalTableTools.remove();
       this.$root.remove();
     }
 
@@ -582,23 +580,23 @@
     positionImgResizer(){
       if(!this.imgTarget) return;
       const r=this.imgTarget.getBoundingClientRect();
-      this.$imgResizer.css({
+      this.$portalResizer.css({
         display:'block',
         top: r.top, left: r.left, width: r.width, height: r.height
       }).attr('aria-hidden','false');
     }
     positionImgTools(){
-      if(!this.imgTarget) return this.$imgTools.hide();
+      if(!this.imgTarget) return this.$portalImgTools.hide();
       const r=this.imgTarget.getBoundingClientRect();
-      this.$imgTools.css({
+      this.$portalImgTools.css({
         display:'flex',
-        top: r.top - this.$imgTools.outerHeight() - 6,
+        top: r.top - this.$portalImgTools.outerHeight() - 6,
         left: r.left
       });
     }
     hideImgUI(){
-      this.$imgResizer.hide().attr('aria-hidden','true');
-      this.$imgTools.hide();
+      this.$portalResizer.hide().attr('aria-hidden','true');
+      this.$portalImgTools.hide();
       this.imgTarget=null; this.resizing=false; this._resizeStart=null;
     }
 
@@ -607,7 +605,7 @@
       const r=this.imgTarget.getBoundingClientRect();
       this._resizeStart={x:e.clientX,y:e.clientY,w:r.width,h:r.height,ratio:r.width/r.height,pos};
       this.resizing=true;
-      $(document.documentElement).css('cursor', this.$imgResizer.find('.ir-handle.'+pos).css('cursor'));
+      $(document.documentElement).css('cursor', this.$portalResizer.find('.ir-handle.'+pos).css('cursor'));
     }
     applyResize(e){
       const st=this._resizeStart; if(!this.resizing || !st || !this.imgTarget) return;
@@ -623,17 +621,17 @@
     }
     endResize(){ if(!this.resizing) return; this.resizing=false; $(document.documentElement).css('cursor',''); }
 
-    /* ---------- table tools (fixed) ---------- */
+    /* ---------- table tools (BODY portal) ---------- */
     positionTableTools($cells){
-      if(!$cells || !$cells.length) return this.$tableTools.hide();
+      if(!$cells || !$cells.length) return this.$portalTableTools.hide();
       const r=$cells.get(0).getBoundingClientRect();
-      this.$tableTools.css({
+      this.$portalTableTools.css({
         display:'flex',
-        top: r.top - this.$tableTools.outerHeight() - 6,
+        top: r.top - this.$portalTableTools.outerHeight() - 6,
         left: r.left
       });
     }
-    hideTableTools(){ this.$tableTools.hide(); }
+    hideTableTools(){ this.$portalTableTools.hide(); }
   }
 
   return NabEditor;
