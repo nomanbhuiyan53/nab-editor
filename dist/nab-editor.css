@@ -1,3 +1,4 @@
+/*! nab-editor v1.0.3 | MIT */
 :root{
   --bg:#f5f7fb; --paper:#fff; --ink:#111827; --ink-2:#374151;
   --primary:#5BB318; --border:#e5e7eb; --muted:#9ca3af;
@@ -7,24 +8,15 @@
 
 /* framework-safe base */
 *{box-sizing:border-box}
-.nab-reset, .nab-reset * { box-sizing: inherit; }
-.nab-reset button, .nab-reset select, .nab-reset input {
-  font: inherit; color: inherit; background: none; border: none; padding: 0; margin: 0;
+.nab *, .nab{box-sizing:inherit}
+.nab button,.nab select,.nab input{font:inherit;color:inherit;background:none;border:none;padding:0;margin:0}
+.nab .nab-btn,.nab .nab-sel{
+  -webkit-appearance:none;appearance:none;
+  border:1px solid var(--border)!important;background:#fff!important;color:var(--ink-2)!important;
+  border-radius:8px!important;height:34px!important;padding:0 10px!important;line-height:1!important;box-shadow:none!important;cursor:pointer!important
 }
-.nab-reset .nab-btn, .nab-reset .nab-sel {
-  -webkit-appearance: none; appearance: none;
-  border: 1px solid var(--border) !important;
-  background: #fff !important;
-  color: var(--ink-2) !important;
-  border-radius: 8px !important;
-  height: 34px !important;
-  padding: 0 10px !important;
-  line-height: 1 !important;
-  box-shadow: none !important;
-  cursor: pointer !important;
-}
-.nab-reset .nab-btn:hover { filter: brightness(0.98); }
-.nab-reset .nab-btn .fa { width: 16px; text-align: center; }
+.nab .nab-btn:hover{filter:brightness(.98)}
+.nab .nab-btn .fa{width:16px;text-align:center}
 
 /* layout */
 .nab-wrap{max-width:1100px;margin:0 auto;padding:0 16px}
@@ -34,7 +26,7 @@
   display:flex;flex-wrap:wrap;gap:8px;align-items:center;
   background:var(--paper);border:1px solid var(--border);border-radius:10px;
   padding:8px 10px;box-shadow:0 6px 24px rgba(0,0,0,.06);
-  position:sticky;top:0;z-index:10;
+  position:sticky;top:0;z-index:10
 }
 .nab-group{display:flex;gap:6px;align-items:center;border-right:1px solid var(--border);padding-right:10px;margin-right:10px}
 .nab-group:last-child{border-right:none;margin-right:0;padding-right:0}
@@ -47,19 +39,18 @@
   background:var(--paper);color:var(--ink);
   min-height:640px;border-radius:12px;border:1px solid var(--border);
   box-shadow:0 12px 48px rgba(0,0,0,.08);
-  resize:vertical;overflow:auto;
+  resize:vertical;overflow:auto
 }
 .nab-editable{
   padding:28px 32px;min-height:540px;outline:none;line-height:1.6;
-  width:100%;font-size:var(--base-font);
+  width:100%;font-size:var(--base-font)
 }
 .nab-editable:empty:before{content:attr(data-ph); color:var(--muted)}
 .nab-status{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);padding:8px 2px}
 
 /* content */
 .nab-editable img{
-  max-width:100%;height:auto;border-radius:6px;border:1px solid var(--border);
-  cursor: pointer;
+  max-width:100%;height:auto;border-radius:6px;border:1px solid var(--border);cursor:pointer
 }
 .nab-editable table{border-collapse:collapse;margin:12px 0;width:100%}
 .nab-editable th,.nab-editable td{border:1px solid #d1d5db;padding:8px}
@@ -72,38 +63,30 @@
 .nab-editable blockquote{border-left:4px solid var(--primary);padding-left:12px;color:#334155;margin:12px 0}
 .nab-editable pre{background:#0b1020;color:#e2e8f0;padding:12px;border-radius:8px;overflow:auto}
 
-/* image float */
+/* image float helpers */
 .nab-img-left{float:left;margin:0 12px 8px 0;display:inline-block}
 .nab-img-right{float:right;margin:0 0 8px 12px;display:inline-block}
 .nab-clearfix::after{content:"";display:block;clear:both}
 
-/* table cell selection */
+/* table selection */
 .nab-cell-selected{background:var(--sel);position:relative}
 .nab-cell-selected::after{content:"";position:absolute;inset:0;border:2px solid var(--sel-border);pointer-events:none}
 
-/* OVERLAYS ARE PORTALED TO BODY */
-/* toolbars (image + table) */
+/* BODY-portaled overlays (immune to transforms) */
 .nab-portal-tools{
-  position: fixed !important;
-  display:none;gap:6px;background:#fff;border:1px solid var(--border);
-  border-radius:8px;padding:6px 8px;box-shadow:0 10px 30px rgba(0,0,0,.12);
-  z-index: 2147483000;
+  position:fixed!important;display:none;gap:6px;background:#fff;border:1px solid var(--border);
+  border-radius:8px;padding:6px 8px;box-shadow:0 10px 30px rgba(0,0,0,.12);z-index:2147483000
 }
 .nab-portal-tools .nab-btn{height:28px}
-
-/* table tools slightly taller buttons */
-.nab-portal-tools.nab-table { }
 .nab-portal-tools.nab-table .nab-btn{height:30px}
 
-/* image resizer overlay */
 .nab-portal-resizer{
-  position: fixed !important;
-  display:none;border:2px solid var(--blue);
-  background:transparent;z-index:2147483001;pointer-events:none;
+  position:fixed!important;display:none;border:2px solid var(--blue);
+  background:transparent;z-index:2147483001;pointer-events:none
 }
 .nab-portal-resizer .ir-handle{
   position:absolute;width:10px;height:10px;background:#fff;border:2px solid var(--handle);
-  border-radius:2px;pointer-events:auto;
+  border-radius:2px;pointer-events:auto
 }
 .ir-handle.nw{top:-6px;left:-6px;cursor:nwse-resize}
 .ir-handle.ne{top:-6px;right:-6px;cursor:nesw-resize}
