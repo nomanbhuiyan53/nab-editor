@@ -609,3 +609,66 @@
   // expose
   return NabEditor;
 }));
+(function () {
+    if (!window.NabEditor) return;
+
+    // replace methods on the prototype so existing instances benefit too
+    const P = window.NabEditor.prototype;
+
+    // Use fixed coords (viewport-based), no scrollY offsets
+    P.positionImgResizer = function () {
+      if (!this.imgTarget) return;
+      const r = this.imgTarget.getBoundingClientRect();
+      this.$imgResizer.css({
+        display: 'block',
+        top: r.top,
+        left: r.left,
+        width: r.width,
+        height: r.height
+      }).attr('aria-hidden','false');
+    };
+
+    P.positionImgTools = function () {
+      if (!this.imgTarget) return this.$imgTools.hide();
+      const r = this.imgTarget.getBoundingClientRect();
+      this.$imgTools.css({
+        display: 'flex',
+        top: r.top - this.$imgTools.outerHeight() - 6,
+        left: r.left
+      });
+    };
+
+    // Also patch table tools to use fixed coordinates
+    P.hideTableTools = function(){ this.$tableTools.hide(); };
+    // Create a helper we can call from outside if needed
+    P.___positionTableToolsFixed = function ($cells) {
+      if (!$cells || !$cells.length) return this.$tableTools.hide();
+      const r = $cells.get(0).getBoundingClientRect();
+      this.$tableTools.css({
+        display: 'flex',
+        top: r.top - this.$tableTools.outerHeight() - 6,
+        left: r.left
+      });
+    };
+
+    // Rewire the global scroll/resize handlers to just re-run our fixed positions
+    const _origBind = P.bind;
+    P.bind = function () {
+      _origBind.apply(this, arguments);
+      const self = this;
+      // Replace window handlers to use fixed math
+      $(window).off('scroll.nab resize.nab').on('scroll.nab resize.nab', function () {
+        self.positionImgResizer();
+        self.positionImgTools();
+      });
+      // Small debounce for layout jumps
+      let tm = null;
+      new ResizeObserver(() => {
+        clearTimeout(tm);
+        tm = setTimeout(() => {
+          self.positionImgResizer();
+          self.positionImgTools();
+        }, 30);
+      }).observe(document.body);
+    };
+  })();

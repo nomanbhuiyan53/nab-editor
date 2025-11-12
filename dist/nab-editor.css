@@ -91,3 +91,20 @@ body{background:var(--bg);font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial}
 .ir-handle.s{bottom:-6px;left:50%;transform:translateX(-50%);cursor:ns-resize}
 .ir-handle.w{left:-6px;top:50%;transform:translateY(-50%);cursor:ew-resize}
 .ir-handle.e{right:-6px;top:50%;transform:translateY(-50%);cursor:ew-resize}
+  /* 1) Make the floating overlays independent of container layout */
+  .nab-img-resizer,
+  .nab-img-tools,
+  .nab-table-tools { position: fixed !important; z-index: 2147483000; }
+
+  /* 2) Defend against framework resets overriding our buttons/selects */
+  .nab-btn, .nab-sel {
+    border: 1px solid var(--border) !important;
+    background: #fff !important;
+    color: var(--ink-2) !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    line-height: 1 !important;
+  }
+  .nab-btn:hover { filter: brightness(0.98); }
+  .nab-sel { height: 34px !important; }
+  .nab-editable img { cursor: pointer; } /* make image clearly selectable */
